@@ -47,5 +47,4 @@ export class UsersService {
     
         return deletedUser; // Kembalikan data user yang dihapus
     }
-    
 }
