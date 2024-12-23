@@ -51,7 +51,6 @@ export class UsersController {
         }
     }
 
-    
     @Put(':id')
     async update(
         @Param('id') id: number,
@@ -72,7 +71,28 @@ export class UsersController {
     }
 
     @Delete(':id')
-    delete(@Param('id') id: string) {
-        return this.usersService.delete(Number(id));
+    async delete(@Param('id') id: string, @Res() res: Response) {
+        try {
+            const numericId = parseInt(id, 10); // Konversi id menjadi number
+
+            // Validasi format ID
+            if (isNaN(numericId)) {
+                return sendResponse(res, HttpStatus.BAD_REQUEST, 'error', 'Invalid ID format', null);
+            }
+
+            // Coba hapus user berdasarkan ID
+            const deletedUser = await this.usersService.delete(numericId);
+
+            // Jika user tidak ditemukan
+            if (!deletedUser) {
+                return sendResponse(res, HttpStatus.NOT_FOUND, 'error', 'User not found', null);
+            }
+
+            // Jika user berhasil dihapus
+            sendResponse(res, HttpStatus.OK, 'success', 'User deleted successfully', deletedUser);
+        } catch (error) {
+            sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
+        }
     }
+
 }

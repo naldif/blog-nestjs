@@ -34,10 +34,18 @@ export class UsersService {
         this.users[userIndex] = { ...this.users[userIndex], ...updateData };
         return this.users[userIndex];
     }
-
-
-    delete(id: number) {
-        this.users = this.users.filter(user => user.id !== id);
-        return { message: `User with id ${id} deleted` };
+    
+    async delete(id: number) {
+        const userIndex = this.users.findIndex(user => user.id === id);
+    
+        if (userIndex === -1) {
+            return null; // Return null jika user tidak ditemukan
+        }
+    
+        const deletedUser = this.users[userIndex]; // Simpan user yang dihapus
+        this.users.splice(userIndex, 1); // Hapus user dari array
+    
+        return deletedUser; // Kembalikan data user yang dihapus
     }
+    
 }
