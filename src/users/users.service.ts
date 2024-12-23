@@ -9,7 +9,7 @@ export class UsersService {
         { id:2, name:"Jane Doe", email: "jane@example.com" },
     ]
 
-    findAll() {
+    async findAll() {
         return this.users;
     }
 
@@ -17,7 +17,7 @@ export class UsersService {
         return this.users.find(user => user.id === id);
     }
 
-    create(user: {name: string; email: string}){
+   async create(user: {name: string; email: string}){
         const newUser = { id: this.users.length + 1, ...user};
         this.users.push(newUser);
         return newUser;
