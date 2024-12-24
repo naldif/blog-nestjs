@@ -5,7 +5,7 @@ import { Injectable } from '@nestjs/common';
 export class UsersService {
 
     private users = [
-        { id: 1, name: "Jhon Doe", email: "john@example.com" },
+        { id: 1, name: "John Doe", email: "john@example.com" },
         { id: 2, name: "Jane Doe", email: "jane@example.com" },
     ]
 
@@ -14,8 +14,8 @@ export class UsersService {
     }
 
     async findOne(id: number) {
-        const user = this.users.find(user => user.id === id);
-        return user || null; // Return `null` jika user tidak ditemukan
+        return this.users.find(user => user.id === id);
+        // return user || null; // Return `null` jika user tidak ditemukan
     }
     
     async create(user: { name: string; email: string }) {

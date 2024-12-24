@@ -22,19 +22,19 @@ export class UsersController {
     async findOne(@Param('id') id: string, @Res() res: Response) {
         try {
             const numericId = parseInt(id, 10); // Konversi id menjadi number
-            if (isNaN(numericId)) {
+            if (isNaN(numericId)) { 
                 return sendResponse(res, HttpStatus.BAD_REQUEST, 'error', 'Invalid ID format', null);
             }
 
             const user = await this.usersService.findOne(numericId);
 
             if (!user) {
-                return sendResponse(res, HttpStatus.BAD_REQUEST, 'error', 'User not found', null);
+                return sendResponse(res, HttpStatus.NOT_FOUND, 'error', 'User not found', null);
             }
 
-            sendResponse(res, HttpStatus.OK, 'success', 'Users fetched successfully', user);
+            return sendResponse(res, HttpStatus.OK, 'success', 'Users fetched successfully', user);
         } catch (error) {
-            sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
+            return sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
         }
     }
 
