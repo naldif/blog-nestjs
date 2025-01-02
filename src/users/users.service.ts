@@ -1,50 +1,38 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
+    constructor(private prisma: PrismaService) {}
 
-    private users = [
-        { id: 1, name: "John Doe", email: "john@example.com" },
-        { id: 2, name: "Jane Doe", email: "jane@example.com" },
-    ]
-
-    async findAll() {
-        return this.users;
+    //Get all users
+    async getAll() {
+        return this.prisma.user.findMany();
     }
 
-    async findOne(id: number) {
-        return this.users.find(user => user.id === id);
-        // return user || null; // Return `null` jika user tidak ditemukan
-    }
+    //Create new user
+    async create(createUserDto: CreateUserDto) {
+        // Periksa apakah email sudah ada
+        const existingUser = await this.prisma.user.findUnique({
+          where: { email: createUserDto.email },
+        });
     
-    async create(user: { name: string; email: string }) {
-        const newUser = { id: this.users.length + 1, ...user };
-        this.users.push(newUser);
-        return newUser;
-    }
-
-    async update(id: number, updateData: { name?: string; email?: string }) {
-        const userIndex = this.users.findIndex(user => user.id === +id); // Gunakan '+' untuk mengonversi string ke number
-
-        if (userIndex === -1) {
-            return null; // Return null jika user tidak ditemukan
-        }
-
-        this.users[userIndex] = { ...this.users[userIndex], ...updateData };
-        return this.users[userIndex];
-    }
-    
-    async delete(id: number) {
-        const userIndex = this.users.findIndex(user => user.id === id);
-    
-        if (userIndex === -1) {
-            return null; // Return null jika user tidak ditemukan
+        if (existingUser) {
+          // Jika email sudah ada, lemparkan ConflictException dengan pesan khusus
+          return {
+            status: 'error',
+            message: {
+              email: ['Email already in use'],
+            },
+          };
         }
     
-        const deletedUser = this.users[userIndex]; // Simpan user yang dihapus
-        this.users.splice(userIndex, 1); // Hapus user dari array
+        // Jika tidak ada, lanjutkan untuk membuat user
+        return this.prisma.user.create({
+          data: createUserDto,
+        });
+      }
     
-        return deletedUser; // Kembalikan data user yang dihapus
-    }
 }
