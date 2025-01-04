@@ -6,14 +6,12 @@ export const sendResponse = (
     status: 'success' | 'error',
     message: string,
     data: any = null,
-    errors: any = null,
     meta: any = null, // Metadata (e.g., pagination)
-  ) => {
+) => {
     res.status(statusCode).json({
-      status,
-      message,
-      data,
-      errors,
-      meta,
+        status,
+        message,
+        data,
+        meta,
     });
-  };
+};
