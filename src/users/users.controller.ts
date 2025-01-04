@@ -1,24 +1,40 @@
-/* eslint-disable prettier/prettier */
-import { Body, Controller, Get, HttpStatus, Post, Res, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Post, Body, Res, UsePipes, UseFilters, HttpStatus, Get, Query, ConflictException } from '@nestjs/common';
 import { Response } from 'express';
+import { CreateUserDto } from '../common/dtos/create-user.dto';
+import { CustomValidationPipe  } from '../common/pipes/validation.pipe';
+import { sendResponse } from '../common/utils/response.util';
 import { UsersService } from './users.service';
-import { sendResponse } from '../common/helpers/response.helper';
-import { CreateUserDto } from './dto/create-user.dto';
+
 
 @Controller('users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) { }
 
     @Get()
-    async findAll(@Res() res: Response) {
-        try {
-            const users = await this.usersService.getAll();
-            sendResponse(res, HttpStatus.OK, 'success', 'Users fetched successfully', users);
-        } catch (error) {
-            sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
+    async findAll(@Query('page') page = 1, @Query('limit') limit = 10, @Res() res: Response) {
+      try {
+        const { data, meta } = await this.usersService.findAllPaginated(+page, +limit);
+
+        if (data.length === 0) {
+          return sendResponse(res, 404, 'error', 'No data found');
         }
+
+        sendResponse(res, HttpStatus.OK, 'success', 'Data retrieved successfully', data, null, meta);
+      } catch (error) {
+        sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
+      }
     }
 
+    @Post()
+    @UsePipes(CustomValidationPipe) // Gunakan CustomValidationPipe untuk validasi format
+    async create(@Body() createUserDto: CreateUserDto, @Res() res: Response) {
+      try {
+        const newUser = await this.usersService.create(createUserDto);
+        sendResponse(res, HttpStatus.OK, 'success', 'User created successfully', newUser);
+      } catch (error) {
+        sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
+      }
+    }
     // @Post()
     // @UsePipes(new ValidationPipe({ transform: true }))  // Gunakan ValidationPipe standar
     // async create(@Body() createUserDto: CreateUserDto, @Res() res: Response) {
@@ -37,18 +53,6 @@ export class UsersController {
     //     });
     //     }
     // }
-
-    @Post()
-    @UsePipes(new ValidationPipe())
-    async create(@Body() createUserDto: CreateUserDto, @Res() res: Response) {
-      try {
-        const newUser = await this.usersService.create(createUserDto);
-        sendResponse(res, HttpStatus.CREATED, 'success', 'User created successfully', newUser);
-      } catch (error) {
-        console.log(error);
-        sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
-      }
-    }
 
     // @Get(':id')
     // async findOne(@Param('id') id: string, @Res() res: Response) {
