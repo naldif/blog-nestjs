@@ -9,4 +9,8 @@ export class CreateUserDto {
     @IsNotEmpty({ message: 'Email is required' })
     @IsEmailUnique({ message: 'Email is already taken' })
     email: string;
+
+    @IsNotEmpty()
+    @MinLength(8) // Contoh validasi untuk password minimal 8 karakter
+    password: string;
 }

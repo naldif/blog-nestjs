@@ -26,7 +26,7 @@ export class UsersController {
   }
 
   @Post()
-  @UsePipes(CustomValidationPipe) // Gunakan CustomValidationPipe untuk validasi format
+  @UsePipes(CustomValidationPipe)
   async create(@Body() createUserDto: CreateUserDto, @Res() res: Response) {
     try {
       const newUser = await this.usersService.create(createUserDto);
@@ -39,17 +39,14 @@ export class UsersController {
   @Get(':id')
   async findOne(@Param('id') id: string, @Res() res: Response) {
     try {
-      const numericId = parseInt(id, 10); // Konversi id menjadi number
+      const numericId = parseInt(id, 10);
 
-      // Validasi format ID
       if (isNaN(numericId)) {
         return sendResponse(res, HttpStatus.BAD_REQUEST, 'error', 'Invalid ID format', null);
       }
 
-      // Cari user berdasarkan ID
       const user = await this.usersService.findOne(numericId);
 
-      // Jika user ditemukan, kirimkan respons sukses
       if (!user) {
         return sendResponse(res, HttpStatus.NOT_FOUND, 'error', `User with ID ${numericId} not found.`, null);
       }
@@ -61,27 +58,24 @@ export class UsersController {
   }
 
   @Put(':id')
-  @UsePipes(CustomValidationPipe) // Apply validation pipe
+  @UsePipes(CustomValidationPipe)
   async update(
     @Param('id') id: string,
-    @Body() updateData: UpdateUserDto, // Use the DTO for validation
+    @Body() updateData: UpdateUserDto,
     @Res() res: Response
   ) {
     try {
-      const numericId = parseInt(id, 10); // Convert id to number
+      const numericId = parseInt(id, 10);
 
-      // Validate ID format
       if (isNaN(numericId)) {
         return sendResponse(res, HttpStatus.BAD_REQUEST, 'error', 'Invalid ID format', null);
       }
 
-      // Check if the user exists
       const existingUser = await this.usersService.findById(numericId);
       if (!existingUser) {
         return sendResponse(res, HttpStatus.NOT_FOUND, 'error', `User with ID ${numericId} not found.`, null);
       }
 
-      // Update user
       const updatedUser = await this.usersService.update(numericId, updateData);
 
       return sendResponse(res, HttpStatus.OK, 'success', 'User updated successfully', updatedUser);
@@ -93,14 +87,12 @@ export class UsersController {
   @Delete(':id')
   async delete(@Param('id') id: string, @Res() res: Response) {
     try {
-      const numericId = parseInt(id, 10); // Konversi id menjadi number
+      const numericId = parseInt(id, 10);
 
-      // Validasi format ID
       if (isNaN(numericId)) {
         return sendResponse(res, HttpStatus.BAD_REQUEST, 'error', 'Invalid ID format', null);
       }
 
-      // Coba hapus user berdasarkan ID
       const user = await this.usersService.findById(numericId);
       if (!user) {
         return sendResponse(res, HttpStatus.NOT_FOUND, 'error', `User with ID ${numericId} not found.`, null);
@@ -108,7 +100,6 @@ export class UsersController {
 
       await this.usersService.delete(numericId);
 
-      // Jika user berhasil dihapus
       return sendResponse(res, HttpStatus.OK, 'success', `User with ID ${numericId} has been deleted successfully.`, null);
     } catch (error) {
       return sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
