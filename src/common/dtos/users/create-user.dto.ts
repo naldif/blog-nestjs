@@ -11,6 +11,6 @@ export class CreateUserDto {
     email: string;
 
     @IsNotEmpty()
-    @MinLength(8) // Contoh validasi untuk password minimal 8 karakter
+    @MinLength(8)
     password: string;
 }
