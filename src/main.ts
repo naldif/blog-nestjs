@@ -1,8 +1,7 @@
-/* eslint-disable prettier/prettier */
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { CustomValidationPipe } from './common/pipes/validation.pipe';
-import { ValidationPipe } from '@nestjs/common';
+import { Injectable, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

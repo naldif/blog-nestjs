@@ -28,35 +28,40 @@ export class UsersService {
   async findAllPaginated(page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
     const take = limit;
-
+  
     // Hitung total data
     const total = await this.prisma.user.count();
-
-    // Ambil data dengan pagination
+  
+    // Ambil data dengan pagination tanpa password
     const data = await this.prisma.user.findMany({
       skip,
       take,
       orderBy: {
         id: 'asc',
       },
-    });
-
-    // Metadata
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        password: false, // Jangan sertakan password
+      },
+    });    
+  
+    // Metadata untuk pagination
     const meta = {
       total,
       currentPage: page,
       lastPage: Math.ceil(total / limit),
       perPage: limit,
     };
-
+  
     return { data, meta };
-  }
+  }  
 
   //Create new user
   async create(createUserDto: CreateUserDto) {
     try {
       const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-      console.log('Hashed Password:', hashedPassword);
       const newUser = await this.prisma.user.create({
         data: {
           ...createUserDto,
