@@ -28,10 +28,10 @@ export class UsersService {
   async findAllPaginated(page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
     const take = limit;
-  
+
     // Hitung total data
     const total = await this.prisma.user.count();
-  
+
     // Ambil data dengan pagination tanpa password
     const data = await this.prisma.user.findMany({
       skip,
@@ -45,8 +45,8 @@ export class UsersService {
         email: true,
         password: false, // Jangan sertakan password
       },
-    });    
-  
+    });
+
     // Metadata untuk pagination
     const meta = {
       total,
@@ -54,9 +54,9 @@ export class UsersService {
       lastPage: Math.ceil(total / limit),
       perPage: limit,
     };
-  
+
     return { data, meta };
-  }  
+  }
 
   //Create new user
   async create(createUserDto: CreateUserDto) {
@@ -72,14 +72,17 @@ export class UsersService {
     } catch (error) {
       console.error('Error hashing password:', error);  // Log error hashing
       throw error;  // Lempar error jika perlu
-    }    
+    }
   }
 
-  // Fungsi untuk mendapatkan user berdasarkan ID
-  async findOne(userId: number): Promise<User | null> {
-    // Cari user berdasarkan ID
+  async findOne(userId: number): Promise<Partial<User> | null> {
     return this.prisma.user.findUnique({
       where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
     });
   }
 

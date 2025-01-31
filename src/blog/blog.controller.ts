@@ -32,7 +32,7 @@ export class BlogController {
 
     @Post()
     @UsePipes(CustomValidationPipe)
-    @UseInterceptors(FileInterceptor('image', fileUploadOptions)) // Gunakan FileInterceptor untuk menangani upload
+    @UseInterceptors(FileInterceptor('image', fileUploadOptions)) // Tetap gunakan interceptor
     async create(
         @Body() createBlogDto: CreateBlogDto,
         @UploadedFile() file: Express.Multer.File, // Mengambil file yang diupload
@@ -51,7 +51,7 @@ export class BlogController {
             }
 
             // If user exists, proceed to create the blog
-            const newBlog = await this.blogService.create(createBlogDto, file); // Kirim file ke service
+            const newBlog = await this.blogService.create(createBlogDto, file); // Kirim file ke service jika tidak ada error
             sendResponse(res, HttpStatus.OK, 'success', 'Blog created successfully', newBlog);
         } catch (error) {
             sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
