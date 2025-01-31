@@ -4,6 +4,7 @@ import { CreateUserDto } from '../common/dtos/users/create-user.dto';
 import { User } from '@prisma/client';
 import { UpdateUserDto } from 'src/common/dtos/users/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { hash } from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -61,17 +62,21 @@ export class UsersService {
   //Create new user
   async create(createUserDto: CreateUserDto) {
     try {
-      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+      // Hash the password
+      const hashedPassword = await hash(createUserDto.password, 10);
+  
+      // Create a new user in the database
       const newUser = await this.prisma.user.create({
         data: {
           ...createUserDto,
           password: hashedPassword,
         },
       });
+  
       return newUser;
     } catch (error) {
-      console.error('Error hashing password:', error);  // Log error hashing
-      throw error;  // Lempar error jika perlu
+      console.error('Error creating user:', error);
+      throw error;
     }
   }
 
@@ -85,6 +90,7 @@ export class UsersService {
       },
     });
   }
+  
 
   // Fungsi untuk mengupdate user berdasarkan ID
   async update(userId: number, updateData: UpdateUserDto): Promise<User> {

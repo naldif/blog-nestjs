@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Post, Query, Res, UploadedFile, UseInterceptors, UsePipes } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UploadedFile, UseInterceptors, UsePipes } from '@nestjs/common';
 import { Response } from 'express';
 import { BlogService } from './blog.service';
 import { sendResponse } from 'src/common/utils/response.util';
@@ -13,7 +13,7 @@ export class BlogController {
     constructor(
         private readonly blogService: BlogService,
         private prisma: PrismaService,
-    ) {}
+    ) { }
 
     @Get()
     async findAll(@Query('page') page = 1, @Query('limit') limit = 10, @Res() res: Response) {
@@ -55,6 +55,77 @@ export class BlogController {
             sendResponse(res, HttpStatus.OK, 'success', 'Blog created successfully', newBlog);
         } catch (error) {
             sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
+        }
+    }
+
+    @Get(':id')
+    async findOne(@Param('id') id: string, @Res() res: Response) {
+        try {
+            const numericId = parseInt(id, 10);
+
+            if (isNaN(numericId)) {
+                return sendResponse(res, HttpStatus.BAD_REQUEST, 'error', 'Invalid ID format', null);
+            }
+
+            const blog = await this.blogService.findOne(numericId);
+
+            if (!blog) {
+                return sendResponse(res, HttpStatus.NOT_FOUND, 'error', `Blog with ID ${numericId} not found.`, null);
+            }
+
+            return sendResponse(res, HttpStatus.OK, 'success', 'Blog fetched successfully', blog);
+        } catch (error) {
+            return sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
+        }
+    }
+
+    @Put(':id')
+    @UsePipes(CustomValidationPipe)
+    @UseInterceptors(FileInterceptor('image', fileUploadOptions))
+    async update(
+        @Param('id') id: string,
+        @Body() updateData: CreateBlogDto,
+        @UploadedFile() file: Express.Multer.File,
+        @Res() res: Response
+    ) {
+        try {
+            const numericId = parseInt(id, 10);
+
+            if (isNaN(numericId)) {
+                return sendResponse(res, HttpStatus.BAD_REQUEST, 'error', 'Invalid ID format', null);
+            }
+
+            const existingBlog = await this.blogService.findById(numericId);
+            if (!existingBlog) {
+                return sendResponse(res, HttpStatus.NOT_FOUND, 'error', `User with ID ${numericId} not found`, null);
+            }
+
+            const updatedBlog = await this.blogService.update(numericId, updateData, file);
+            return sendResponse(res, HttpStatus.OK, 'success', 'Blog updated successfully', updatedBlog);
+        } catch (error) {
+            return sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
+        }
+    }
+
+    @Delete(':id')
+    async delete(@Param('id') id:string, @Res() res: Response) {
+        try {
+            const numericId = parseInt(id, 10);
+
+            if(isNaN(numericId)) {
+                return sendResponse(res, HttpStatus.BAD_REQUEST, 'error', 'Invalid ID format', null);
+            }
+
+            const blog = await this.blogService.findById(numericId);
+            if(!blog) {
+                return sendResponse(res, HttpStatus.NOT_FOUND, 'error', `User with ID ${numericId} not found.`, null);
+            }
+
+            await this.blogService.delete(numericId);
+
+            return sendResponse(res, HttpStatus.OK, 'success', `User with ID ${numericId} has been deleted successfully.`,  null);
+        } catch (error) {
+            return sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
         }
     }
 
