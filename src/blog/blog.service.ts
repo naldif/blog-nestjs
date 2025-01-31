@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateBlogDto } from 'src/common/dtos/blog/create-blog.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import slugify from 'slugify';
 
 @Injectable()
 export class BlogService {
@@ -9,12 +10,12 @@ export class BlogService {
     async findById(blogId: number): Promise<any> {
         //cari blog berdasarkan ID
         return this.prisma.blog.findUnique({
-            where:{ id:blogId },
+            where: { id: blogId },
         });
     }
 
     async findAllPaginate(page: number = 1, limit: number = 10) {
-        const skip = (page - 1 ) * limit;
+        const skip = (page - 1) * limit;
         const take = limit;
 
         const total = await this.prisma.blog.count();
@@ -37,14 +38,29 @@ export class BlogService {
         return { data, meta }
     }
 
-    async create(createBlogDto: CreateBlogDto) {
+    async create(createBlogDto: CreateBlogDto, file: Express.Multer.File) {
         try {
-            const newBlog = await this.prisma.blog.create({
-                data: createBlogDto
+            const slug = slugify(createBlogDto.title, {
+                lower: true,
+                strict: true,
+                trim: true,
             });
+
+            // const userId = Number(createBlogDto.userId);
+
+            const newBlog = await this.prisma.blog.create({
+                data: {
+                    ...createBlogDto,
+                    slug: slug,
+                    image: file ? `/uploads/${file.filename}` : null,
+                   
+                },
+            });
+
             return newBlog;
         } catch (error) {
-            throw error;
+            console.error('Error creating blog:', error);
+            throw new Error(`Error creating blog: ${error.message}`);
         }
     }
 }

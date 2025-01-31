@@ -13,29 +13,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Blog {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  slug        String 
+  image       String?
+  status      Status   @default(WAITING)
+  userId      Int
+  user        User     @relation("UserBlogs", fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("blogs")
+}
 
 model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
   password  String
-  blogs     Blog[]   @relation("UserBlogs")  // Menambahkan relasi ke Blog
-}
-
-model Blog {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String
-  slug        String   @unique
-  image       String
-  status      Status   @default(WAITING)
-  userId      Int
-  user        User     @relation("UserBlogs", fields: [userId], references: [id])
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("blogs")
+  blogs     Blog[]   @relation("UserBlogs")
 }
 
 enum Status {
@@ -43,4 +41,3 @@ enum Status {
   WAITING
   REJECTED
 }
-
