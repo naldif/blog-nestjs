@@ -46,8 +46,6 @@ export class BlogService {
                 trim: true,
             });
 
-            // const userId = Number(createBlogDto.userId);
-
             const newBlog = await this.prisma.blog.create({
                 data: {
                     ...createBlogDto,
