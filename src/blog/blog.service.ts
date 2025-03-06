@@ -73,6 +73,7 @@ export class BlogService {
 
     async update(blogId: number, updateData: CreateBlogDto, file: Express.Multer.File): Promise<Blog> {
         try {
+
             // Mengambil data blog yang ada untuk mengecek gambar lama
             const existingBlog = await this.prisma.blog.findUnique({
                 where: { id: blogId },
@@ -82,7 +83,6 @@ export class BlogService {
             // Jika ada gambar baru yang diunggah, hapus gambar lama
             if (file && existingBlog?.image) {
                 // Debug log untuk memeriksa path gambar lama
-                console.log('Menghapus gambar lama di path:', existingBlog.image);
                 await deleteImageFromStorage(existingBlog.image); // Hapus gambar lama
             }
 
