@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserDto } from '../common/dtos/users/create-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { User } from '@prisma/client';
-import { UpdateUserDto } from 'src/common/dtos/users/update-user.dto';
+import { UpdateUserDto } from 'src/users/dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { hash } from 'bcrypt';
 
@@ -18,7 +18,7 @@ export class UsersService {
     });
   }
 
-  async findById(userId: number): Promise<any> {
+  async findById(userId: string): Promise<any> {
     // Cari user berdasarkan ID
     return this.prisma.user.findUnique({
       where: { id: userId },
@@ -80,7 +80,7 @@ export class UsersService {
     }
   }
 
-  async findOne(userId: number): Promise<Partial<User> | null> {
+  async findOne(userId: string): Promise<Partial<User> | null> {
     return this.prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -93,7 +93,7 @@ export class UsersService {
   
 
   // Fungsi untuk mengupdate user berdasarkan ID
-  async update(userId: number, updateData: UpdateUserDto): Promise<User> {
+  async update(userId: string, updateData: UpdateUserDto): Promise<User> {
     // Update user dengan data baru
     return this.prisma.user.update({
       where: { id: userId },
@@ -101,7 +101,7 @@ export class UsersService {
     });
   }
 
-  async delete(userId: number): Promise<void> {
+  async delete(userId: string): Promise<void> {
     await this.prisma.user.delete({
       where: { id: userId },
     });

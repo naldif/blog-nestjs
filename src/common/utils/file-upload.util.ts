@@ -1,4 +1,5 @@
 // src/common/utils/file-upload.util.ts
+import { BadRequestException } from '@nestjs/common';
 import { diskStorage } from 'multer';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -17,7 +18,7 @@ export const fileUploadOptions = {
         if (allowedMimes.includes(file.mimetype)) {
             cb(null, true); // Terima file jika sesuai filter
         } else {
-            cb(new Error('Invalid file type! Only image files are allowed.'), false); // Tolak file yang tidak sesuai
+            cb(new BadRequestException('Invalid file type! Only image files are allowed.'), false);
         }
     },
     limits: {

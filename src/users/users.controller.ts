@@ -1,10 +1,10 @@
 import { Controller, Post, Body, Res, UsePipes, HttpStatus, Get, Query, Delete, Param, Put } from '@nestjs/common';
 import { Response } from 'express';
-import { CreateUserDto } from '../common/dtos/users/create-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { CustomValidationPipe } from '../common/pipes/validation.pipe';
 import { sendResponse } from '../common/utils/response.util';
 import { UsersService } from './users.service';
-import { UpdateUserDto } from 'src/common/dtos/users/update-user.dto';
+import { UpdateUserDto } from 'src/users/dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -39,16 +39,11 @@ export class UsersController {
   @Get(':id')
   async findOne(@Param('id') id: string, @Res() res: Response) {
     try {
-      const numericId = parseInt(id, 10);
 
-      if (isNaN(numericId)) {
-        return sendResponse(res, HttpStatus.BAD_REQUEST, 'error', 'Invalid ID format', null);
-      }
-
-      const user = await this.usersService.findOne(numericId);
+      const user = await this.usersService.findOne(id);
 
       if (!user) {
-        return sendResponse(res, HttpStatus.NOT_FOUND, 'error', `User with ID ${numericId} not found.`, null);
+        return sendResponse(res, HttpStatus.NOT_FOUND, 'error', `User with ID ${id} not found.`, null);
       }
 
       return sendResponse(res, HttpStatus.OK, 'success', 'User fetched successfully', user);
@@ -65,18 +60,13 @@ export class UsersController {
     @Res() res: Response
   ) {
     try {
-      const numericId = parseInt(id, 10);
 
-      if (isNaN(numericId)) {
-        return sendResponse(res, HttpStatus.BAD_REQUEST, 'error', 'Invalid ID format', null);
-      }
-
-      const existingUser = await this.usersService.findById(numericId);
+      const existingUser = await this.usersService.findById(id);
       if (!existingUser) {
-        return sendResponse(res, HttpStatus.NOT_FOUND, 'error', `User with ID ${numericId} not found.`, null);
+        return sendResponse(res, HttpStatus.NOT_FOUND, 'error', `User with ID ${id} not found.`, null);
       }
 
-      const updatedUser = await this.usersService.update(numericId, updateData);
+      const updatedUser = await this.usersService.update(id, updateData);
 
       return sendResponse(res, HttpStatus.OK, 'success', 'User updated successfully', updatedUser);
     } catch (error) {
@@ -87,20 +77,14 @@ export class UsersController {
   @Delete(':id')
   async delete(@Param('id') id: string, @Res() res: Response) {
     try {
-      const numericId = parseInt(id, 10);
-
-      if (isNaN(numericId)) {
-        return sendResponse(res, HttpStatus.BAD_REQUEST, 'error', 'Invalid ID format', null);
-      }
-
-      const user = await this.usersService.findById(numericId);
+      const user = await this.usersService.findById(id);
       if (!user) {
-        return sendResponse(res, HttpStatus.NOT_FOUND, 'error', `User with ID ${numericId} not found.`, null);
+        return sendResponse(res, HttpStatus.NOT_FOUND, 'error', `User with ID ${id} not found.`, null);
       }
 
-      await this.usersService.delete(numericId);
+      await this.usersService.delete(id);
 
-      return sendResponse(res, HttpStatus.OK, 'success', `User with ID ${numericId} has been deleted successfully.`, null);
+      return sendResponse(res, HttpStatus.OK, 'success', `User with ID ${id} has been deleted successfully.`, null);
     } catch (error) {
       return sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
     }

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateBlogDto } from 'src/common/dtos/blog/create-blog.dto';
+import { CreateBlogDto } from 'src/blog/dto/create-blog.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import slugify from 'slugify';
 import { Blog } from '@prisma/client';
-import { UpdateBlogDto } from 'src/common/dtos/blog/update-blog.dto';
+import { UpdateBlogDto } from 'src/blog/dto/update-blog.dto';
 import { deleteImageFromStorage } from 'src/common/utils/image-service.util';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -12,7 +12,7 @@ import * as path from 'path';
 export class BlogService {
     constructor(private prisma: PrismaService) { }
 
-    async findById(blogId: number): Promise<any> {
+    async findById(blogId: string): Promise<any> {
         return this.prisma.blog.findUnique({
             where: { id: blogId },
         });
@@ -65,13 +65,13 @@ export class BlogService {
         }
     }
 
-    async findOne(blogId: number): Promise<Partial<Blog> | null> {
+    async findOne(blogId: string): Promise<Partial<Blog> | null> {
         return this.prisma.blog.findUnique({
             where: { id: blogId }
         })
     }
 
-    async update(blogId: number, updateData: CreateBlogDto, file: Express.Multer.File): Promise<Blog> {
+    async update(blogId: string, updateData: UpdateBlogDto, file: Express.Multer.File): Promise<Blog> {
         try {
 
             // Mengambil data blog yang ada untuk mengecek gambar lama
@@ -94,10 +94,17 @@ export class BlogService {
                 newImagePath = await this.saveImage(file);
             }
 
+            const slug = slugify(updateData.title, {
+                lower: true,
+                strict: true,
+                trim: true,
+            });
+
             // Update data blog dengan path gambar baru (atau gambar lama jika tidak ada gambar baru)
             const updatedData = {
                 ...updateData,
-                image: newImagePath,  // Mengatur field image ke path gambar baru atau gambar lama
+                image: newImagePath, 
+                slug: slug,
             };
 
             // Mengupdate data blog di database
@@ -113,12 +120,30 @@ export class BlogService {
         }
     }
 
-    async delete(blogId: number): Promise<void> {
-        await this.prisma.blog.delete({
-            where: { id: blogId },
-        })
-    }
+    async delete(blogId: string): Promise<void> {
+        try {
+            // Cari blog terlebih dahulu
+            const blog = await this.prisma.blog.findUnique({
+                where: { id: blogId },
+                select: { image: true }, // Ambil hanya field image
+            });
 
+            // Hapus gambar jika ada
+            if (blog.image) {
+                await deleteImageFromStorage(blog.image);
+            }
+
+            // Hapus data blog dari database
+            await this.prisma.blog.delete({
+                where: { id: blogId },
+            });
+
+            console.log(`Blog dengan ID ${blogId} berhasil dihapus`);
+        } catch (error) {
+            console.error('Terjadi kesalahan saat menghapus blog:', error);
+            throw error;
+        }
+    }
 
     async saveImage(file: Express.Multer.File): Promise<string> {
         const uploadPath = path.resolve(__dirname, '..', 'uploads', file.filename); // Save in the uploads folder (adjust as needed)
