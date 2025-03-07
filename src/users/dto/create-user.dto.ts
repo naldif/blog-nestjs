@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, MinLength, Validate } from 'class-validator';
-import { IsEmailUnique } from '../../common/validators/users/is-email-unique.decorator';
+import { IsUnique } from 'src/common/decorators/is-unique.decorator';
 
 export class CreateUserDto {
     @IsNotEmpty({ message: 'Name is required' })
@@ -7,7 +7,7 @@ export class CreateUserDto {
 
     @IsEmail({}, { message: 'Invalid email format' })
     @IsNotEmpty({ message: 'Email is required' })
-    @IsEmailUnique({ message: 'Email is already taken' })
+    @IsUnique('user', 'email', { message: 'Email is already taken' })
     email: string;
 
     @IsNotEmpty()
