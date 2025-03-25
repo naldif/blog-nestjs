@@ -21,25 +21,42 @@ export class BlogService {
     async findAllPaginate(page: number = 1, limit: number = 10) {
         const skip = (page - 1) * limit;
         const take = limit;
-
+    
         const total = await this.prisma.blog.count();
-
+    
         const data = await this.prisma.blog.findMany({
             skip,
             take,
-            orderBy: {
-                id: 'asc',
+            orderBy: { id: 'asc' },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                slug: true,
+                image: true,
+                status: true,
+                createdAt: true,
+                updatedAt: true,
+                user: { select: { name: true } }, // Gunakan 'user' karena ini sesuai model
+                category: { select: { name: true } }
             },
         });
-
+    
+        // Mapping ulang untuk mengganti 'user' menjadi 'author'
+        const formattedData = data.map(({ user, category, ...blog }) => ({
+            ...blog,
+            author: user.name, // Menggunakan user.name dan memberi alias 'author'
+            category: category.name
+        }));
+    
         const meta = {
             total,
             currentPage: page,
             lastPage: Math.ceil(total / limit),
-            perPage: limit
+            perPage: limit,
         };
-
-        return { data, meta }
+    
+        return { data: formattedData, meta };
     }
 
     async create(createBlogDto: CreateBlogDto, file: Express.Multer.File) {

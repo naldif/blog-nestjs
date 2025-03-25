@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, Res, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, Res, HttpStatus, Query, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CustomValidationPipe } from 'src/common/pipes/validation.pipe';
 import { sendResponse } from 'src/common/utils/response.util';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('category')
 export class CategoryController {
@@ -54,7 +55,7 @@ export class CategoryController {
 
             return sendResponse(res, HttpStatus.OK, 'success', 'Category fatched successfully', category);
         } catch (error) {
-          return sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
+            return sendResponse(res, HttpStatus.INTERNAL_SERVER_ERROR, 'error', 'Something went wrong', null, error.message);
         }
     }
 

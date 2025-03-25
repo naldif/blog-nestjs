@@ -8,9 +8,10 @@ import { CategoryModule } from './category/category.module';
 import { IsUniqueConstraint } from './common/validators/is-unique.validator';
 import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [UsersModule, BlogModule, CategoryModule, PrismaModule],
+  imports: [UsersModule, BlogModule, CategoryModule, PrismaModule, AuthModule],
   controllers: [AppController],
   providers: [PrismaService, AppService, IsUniqueConstraint],
   exports: [IsUniqueConstraint],
