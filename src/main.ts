@@ -6,6 +6,7 @@ import * as path from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import * as cookieParser from 'cookie-parser';
+import { useContainer } from 'class-validator';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -14,6 +15,8 @@ async function bootstrap() {
   app.useStaticAssets(path.join(__dirname, '..', 'uploads'), {
     prefix: '/uploads', // Prefix URL untuk file yang diupload
   });
+
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   app.useGlobalGuards(new JwtAuthGuard(new Reflector()));
   app.use(cookieParser());

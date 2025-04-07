@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { CreateBlogDto } from 'src/blog/dto/create-blog.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import slugify from 'slugify';
-import { Blog } from '@prisma/client';
 import { UpdateBlogDto } from 'src/blog/dto/update-blog.dto';
 import { deleteImageFromStorage } from 'src/common/utils/image-service.util';
 import * as fs from 'fs';
@@ -82,13 +81,13 @@ export class BlogService {
         }
     }
 
-    async findOne(blogId: string): Promise<Partial<Blog> | null> {
+    async findOne(blogId: string) {
         return this.prisma.blog.findUnique({
             where: { id: blogId }
         })
     }
 
-    async update(blogId: string, updateData: UpdateBlogDto, file: Express.Multer.File): Promise<Blog> {
+    async update(blogId: string, updateData: UpdateBlogDto, file: Express.Multer.File) {
         try {
 
             // Mengambil data blog yang ada untuk mengecek gambar lama

@@ -2,6 +2,8 @@ import {
     ValidatorConstraint,
     ValidatorConstraintInterface,
     ValidationArguments,
+    registerDecorator,
+    ValidationOptions,
 } from 'class-validator';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
@@ -9,42 +11,48 @@ import { Injectable } from '@nestjs/common';
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class IsUniqueConstraint implements ValidatorConstraintInterface {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) {
+        console.log('🔥 PrismaService tersedia di Validator:', !!this.prisma);
+    }
 
     async validate(value: any, args: ValidationArguments) {
         if (!this.prisma) {
-            console.error('⚠️ PrismaService tidak tersedia!');
-            return false;
+            throw new Error('❌ PrismaService tidak tersedia di IsUniqueConstraint!');
         }
 
-        const [tableName, columnName] = args.constraints;
-    
-        if (!tableName || !columnName) {
-            console.error('⚠️ Parameter tableName atau columnName tidak ditemukan!');
-            return false;
+        const [model, column] = args.constraints;
+
+        if (!(model in this.prisma)) {
+            throw new Error(`❌ Model ${model} tidak ditemukan di Prisma!`);
         }
-    
-        const model = (this.prisma as any)[tableName];
-    
-        if (!model) {
-            console.error(`⚠️ Model '${tableName}' tidak ditemukan di Prisma!`);
-            return false;
+
+        const modelInstance = (this.prisma as any)[model];
+
+        if (!modelInstance || typeof modelInstance.findUnique !== 'function') {
+            throw new Error(`❌ Model ${model} tidak memiliki metode findUnique!`);
         }
-    
-        try {
-            const exists = await model.findFirst({
-            where: { [columnName]: value },
-            });
-    
-            return !exists;
-        } catch (error) {
-            console.error(`⚠️ Error Prisma saat mengecek uniqueness: ${error.message}`);
-            return false;
-        }
+
+        const exists = await modelInstance.findUnique({
+            where: { [column]: value },
+        });
+
+        return !exists;
     }
 
     defaultMessage(args: ValidationArguments) {
-        const [tableName, columnName] = args.constraints;
-        return `${columnName} sudah digunakan. Harap pilih yang lain.`;
+        const [model, column] = args.constraints;
+        return `${column} sudah digunaka n di tabel ${model}`;
     }
+}
+
+export function IsUnique(model: string, column: string, validationOptions?: ValidationOptions) {
+    return function (object: Object, propertyName: string) {
+        registerDecorator({
+            target: object.constructor,
+            propertyName: propertyName,
+            options: validationOptions,
+            constraints: [model, column],
+            validator: IsUniqueConstraint,
+        });
+    };
 }

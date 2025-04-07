@@ -13,6 +13,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+
+  blogs     Blog[]   @relation("UserBlogs")
+  roles     Role[] @relation("UserRole")
+}
+
+model Role {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  permissions Permission[] @relation("RolePermission")
+  users       User[]       @relation("UserRole")
+}
+
+model Permission {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  roles Role[] @relation("RolePermission")
+}
+
 model Blog {
   id          String      @id @default(uuid())
   title       String
@@ -33,16 +56,8 @@ model Blog {
 
 model Category {
   id    String  @id @default(uuid())
-  name  String
+  name  String @unique
   blogs Blog[] @relation("Category")
-}
-
-model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  blogs     Blog[]   @relation("UserBlogs")
 }
 
 enum Status {

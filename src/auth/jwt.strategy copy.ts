@@ -1,21 +1,17 @@
-// auth/jwt.strategy.ts
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor(private prisma: PrismaService) {
+    constructor() {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            secretOrKey: 'MySuperSecretKey123', // Gantilah dengan yang lebih aman
+            secretOrKey: 'MySuperSecretKey123', // Gantilah dengan variabel environment di production
         });
     }
 
     async validate(payload: any) {
-        return await this.prisma.user.findUnique({
-            where: { id: payload.sub },
-        });
+        return { userId: payload.sub, email: payload.email };
     }
 }

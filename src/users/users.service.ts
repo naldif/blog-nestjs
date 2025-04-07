@@ -64,7 +64,7 @@ export class UsersService {
     try {
       // Hash the password
       const hashedPassword = await hash(createUserDto.password, 10);
-  
+
       // Create a new user in the database
       const newUser = await this.prisma.user.create({
         data: {
@@ -72,7 +72,7 @@ export class UsersService {
           password: hashedPassword,
         },
       });
-  
+
       return newUser;
     } catch (error) {
       console.error('Error creating user:', error);
@@ -90,7 +90,7 @@ export class UsersService {
       },
     });
   }
-  
+
 
   // Fungsi untuk mengupdate user berdasarkan ID
   async update(userId: string, updateData: UpdateUserDto): Promise<User> {

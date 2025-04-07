@@ -1,16 +1,20 @@
-import { Controller, Post, Body, Res, UsePipes, HttpStatus, Get, Query, Delete, Param, Put } from '@nestjs/common';
+import { Controller, Post, Body, Res, UsePipes, HttpStatus, Get, Query, Delete, Param, Put, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { CreateUserDto } from './dto/create-user.dto';
 import { CustomValidationPipe } from '../common/pipes/validation.pipe';
 import { sendResponse } from '../common/utils/response.util';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from 'src/users/dto/update-user.dto';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Permission } from 'src/common/decorators/permission.decorator';
 
 @Controller('users')
+@UseGuards(RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
 
   @Get()
+  @Permission('read_users')
   async findAll(@Query('page') page = 1, @Query('limit') limit = 10, @Res() res: Response) {
     try {
       const { data, meta } = await this.usersService.findAllPaginated(+page, +limit);
@@ -75,6 +79,7 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @Permission('delete_users')
   async delete(@Param('id') id: string, @Res() res: Response) {
     try {
       const user = await this.usersService.findById(id);
